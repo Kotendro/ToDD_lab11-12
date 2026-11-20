@@ -1,0 +1,16 @@
+__pycache__
+
+.venv
+env
+
+.env
+.env.*
+!.env.example
+
+staticfiles/
+media/
+
+*.log
+
+.vscode/
+.DS_Store
