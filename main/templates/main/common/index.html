@@ -1,0 +1,17 @@
+{% extends "main/base.html" %} 
+
+{% block title %}Таблицы{% endblock %} 
+
+{% block content %}
+<h1>Таблицы</h1>
+
+<ul>
+  {% for section in sections %}
+  <li>
+    <a href="{{ section.url }}">{{ section.title|capfirst }}</a>
+  </li>
+  {% empty %}
+  <li>Разделы не найдены.</li>
+  {% endfor %}
+</ul>
+{% endblock %}
