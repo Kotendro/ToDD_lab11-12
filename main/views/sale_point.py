@@ -7,7 +7,7 @@ from .common import BaseModelListView, BaseModelCreateView, BaseModelUpdateView
 
 class SalePointListView(BaseModelListView):
     model = SalePoint
-    fields = ["open_time", "close_time"]
+    fields = "__all__"
 
 
 class SalePointCreateView(BaseModelCreateView):

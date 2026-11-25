@@ -3,63 +3,176 @@
 {% block title %}{{ title|capfirst }}{% endblock %}
 
 {% block content %}
-<h1>{{ title|capfirst }}</h1>
+<h1 class="text-3xl font-bold mb-6 text-gray-800">{{ title|capfirst }}</h1>
 
-<p>
-    <a href="{{ create_url }}">+ Добавить запись</a>
-</p>
+<input type="hidden" id="csrfToken" value="{{ csrf_token }}">
 
 {% if rows %}
-
-    {% if is_paginated %}
-        <div>
-            <span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
-
-            {% if page_obj.has_previous %}
-                <a href="?page=1">« Первая</a>
-                <a href="?page={{ page_obj.previous_page_number }}">‹ Назад</a>
-            {% endif %}
-
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}">Вперёд ›</a>
-                <a href="?page={{ page_obj.paginator.num_pages }}">Последняя »</a>
-            {% endif %}
+    <div class="flex flex-col gap-6">
+        
+        {# Кнопки действий #}
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ create_url }}" class="inline-block px-4 py-2 bg-blue-600 text-white hover:bg-blue-700">
+                Создать
+            </a>
+            <button id="editBtn" disabled="disabled" class="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed">
+                Изменить
+            </button>
+            <button id="deleteBtn" disabled="disabled" class="px-4 py-2 bg-red-600 text-white hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed">
+                Удалить
+            </button>
         </div>
-    {% endif %}
 
-    <table border="1" cellpadding="6" cellspacing="0">
-        <thead>
-            <tr>
-                {% for header in headers %}
-                    <th>{{ header|capfirst }}</th>
-                {% endfor %}
-                <th>Действия</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in rows %}
-                <tr>
-                    <td>
-                        <a href="{{ row.edit_url }}">{{ row.str_value }}</a>
-                    </td>
-                    {% for value in row.values %}
-                        <td>{{ value }}</td>
-                    {% endfor %}
-                    <td>
-                        <form method="post" action="{{ row.delete_url }}" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" onclick="return confirm('Удалить запись?')">
-                                Удалить
-                            </button>
+        {# Таблица #}
+        <div class="w-full">
+            {% if is_paginated %}
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4 py-4 px-6 bg-gray-50 ed">
+                    <div class="flex items-center gap-4">
+                        <span class="text-gray-600">Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+
+                        <div class="flex space-x-2">
+                            {% if page_obj.has_previous %}
+                                <a href="?page=1" class="px-3 py-1 bg-gray-200 text-gray-700 ed hover:bg-gray-300" title="Первая страница">&lt;&lt;</a>
+                                <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 bg-gray-200 text-gray-700 ed hover:bg-gray-300" title="Предыдущая страница">&lt;</a>
+                            {% endif %}
+
+                            {% if page_obj.has_next %}
+                                <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 bg-gray-200 text-gray-700 ed hover:bg-gray-300" title="Следующая страница">&gt;</a>
+                                <a href="?page={{ page_obj.paginator.num_pages }}" class="px-3 py-1 bg-gray-200 text-gray-700 ed hover:bg-gray-300" title="Последняя страница">&gt;&gt;</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm text-gray-700">Перейти:</span>
+                        <form method="get" class="flex items-center gap-2">
+                            <input 
+                                type="number" 
+                                name="page" 
+                                min="1" 
+                                max="{{ page_obj.paginator.num_pages }}" 
+                                value="{{ page_obj.number }}" 
+                                class="w-16 px-2 py-1 border border-gray-300 ed text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                title="Введите номер страницы"
+                            >
+                            <button type="submit" class="px-3 py-1 bg-gray-200 text-gray-700 ed hover:bg-gray-300 text-sm" title="Перейти">Ок</button>
                         </form>
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="overflow-x-auto overflow-y-auto" style="max-height: 60vh;">
+                <table class="min-w-full bg-white border border-gray-100">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            {% for header in headers %}
+                                {% if header.sortable %}
+                                    <th 
+                                        class="py-3 px-4 text-left text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-200"
+                                        onclick="window.location.href='?sort_by={{ header.field_name }}{% if header.sort_order == 'asc' %}&sort_order=desc{% endif %}'"
+                                    >
+                                        {{ header.display_name }}
+                                        {% if header.is_sorted %}
+                                            {% if header.sort_order == 'asc' %}
+                                                <span class="ml-1">▲</span>
+                                            {% else %}
+                                                <span class="ml-1">▼</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </th>
+                                {% else %}
+                                    <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">{{ header.display_name }}</th>
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for row in rows %}
+                            <tr class="cursor-pointer" data-edit-url="{{ row.edit_url }}" data-delete-url="{{ row.delete_url }}">
+                                {% for value in row.values %}
+                                    <td class="py-3 px-4 text-gray-700">{{ value }}</td>
+                                {% endfor %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
 {% else %}
-    <p>Записей пока нет.</p>
+    <p class="text-gray-500 italic">Записей пока нет.</p>
 {% endif %}
+
+<script>
+    // Сбрасываем состояние при загрузке страницы
+    let selectedRow = null;
+    const editBtn = document.getElementById('editBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
+    
+    // Устанавливаем начальное состояние кнопок
+    editBtn.disabled = true;
+    deleteBtn.disabled = true;
+
+    // Делегирование событий для строк таблицы
+    document.querySelector('tbody').addEventListener('click', function(e) {
+        const row = e.target.closest('tr');
+        if (row && row.tagName === 'TR') {
+            handleRowSelect(row, e);
+        }
+    });
+
+    function handleRowSelect(row, event) {
+        // Если это клик по кнопке (не по строке), выходим
+        if (event.target.tagName === 'BUTTON' || event.target.closest('button')) {
+            return;
+        }
+
+        // Снимаем выделение с предыдущей строки
+        if (selectedRow) {
+            selectedRow.classList.remove('bg-blue-200');
+        }
+
+        // Выделяем новую строку
+        row.classList.add('bg-blue-200');
+        selectedRow = row;
+
+        // Включаем кнопки
+        document.getElementById('editBtn').disabled = false;
+        document.getElementById('deleteBtn').disabled = false;
+    }
+
+    document.getElementById('editBtn').addEventListener('click', function() {
+        if (selectedRow) {
+            const editUrl = selectedRow.getAttribute('data-edit-url');
+            if (editUrl) {
+                window.location.href = editUrl;
+            }
+        }
+    });
+
+    document.getElementById('deleteBtn').addEventListener('click', function() {
+        if (selectedRow) {
+            const deleteUrl = selectedRow.getAttribute('data-delete-url');
+            if (deleteUrl) {
+                if (confirm('Удалить запись?')) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = deleteUrl;
+
+                    // Добавляем CSRF токен
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = 'csrfmiddlewaretoken';
+                    csrfInput.value = document.getElementById('csrfToken').value;
+                    form.appendChild(csrfInput);
+
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            }
+        }
+    });
+</script>
 
 {% endblock %}

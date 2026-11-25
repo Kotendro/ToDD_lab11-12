@@ -7,6 +7,7 @@ from .common import BaseModelListView, BaseModelCreateView, BaseModelUpdateView
 
 class LocationListView(BaseModelListView):
     model = Location
+    fields = "__all__"
 
 
 class LocationCreateView(BaseModelCreateView):

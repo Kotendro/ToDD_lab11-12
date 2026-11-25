@@ -7,7 +7,7 @@ from .common import BaseModelListView, BaseModelCreateView, BaseModelUpdateView
 
 class TurnstileListView(BaseModelListView):
     model = Turnstile
-    fields = ["pass_price"]
+    fields = "__all__"
 
 
 class TurnstileCreateView(BaseModelCreateView):

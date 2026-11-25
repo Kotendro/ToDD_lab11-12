@@ -7,7 +7,7 @@ from .common import BaseModelListView, BaseModelCreateView, BaseModelUpdateView
 
 class DrinkListView(BaseModelListView):
     model = Drink
-    fields = ["price"]
+    fields = "__all__"
 
 
 class DrinkCreateView(BaseModelCreateView):

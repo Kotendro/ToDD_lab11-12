@@ -7,8 +7,7 @@ from .common import BaseModelListView, BaseModelCreateView, BaseModelUpdateView
 
 class SkiPassListView(BaseModelListView):
     model = SkiPass
-    fields = ["client", "balance", "status"]
-    paginate_by = 25
+    fields = "__all__"
 
 
 class SkiPassCreateView(BaseModelCreateView):

@@ -9,14 +9,13 @@
     <link rel="stylesheet" href="{% static 'src/output.css'%}">
 </head>
 <body>
-    <header>
-        <nav>
-            <a href="{% url 'main:index' %}">Главная</a>
+    <header class="bg-gray-800 text-white py-4">
+        <nav class="container mx-auto px-4">
+            <a href="{% url 'main:index' %}" class="hover:text-gray-300">Главная</a>
         </nav>
-        <hr>
     </header>
 
-    <main>
+    <main class="container mx-auto px-4 py-6">
         {% block content %}{% endblock %}
     </main>
 </body>

@@ -7,8 +7,7 @@ from .common import BaseModelListView, BaseModelCreateView, BaseModelUpdateView
 
 class ClientListView(BaseModelListView):
     model = Client
-    fields = ["phone_number", "registration_date"]
-    paginate_by = 25
+    fields = "__all__"
 
 
 class ClientCreateView(BaseModelCreateView):

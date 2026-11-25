@@ -7,8 +7,7 @@ from .common import BaseModelListView, BaseModelCreateView, BaseModelUpdateView
 
 class BalanceOperationListView(BaseModelListView):
     model = BalanceOperation
-    fields = ["amount", "operation_datetime"]
-    paginate_by = 25
+    fields = "__all__"
 
 
 class BalanceOperationCreateView(BaseModelCreateView):

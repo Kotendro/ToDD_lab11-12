@@ -7,8 +7,7 @@ from .common import BaseModelListView, BaseModelCreateView, BaseModelUpdateView
 
 class DrinkPurchaseListView(BaseModelListView):
     model = DrinkPurchase
-    fields = ["sale_point", "purchase_datetime", "charged_amount"]
-    paginate_by = 25
+    fields = "__all__"
 
 
 class DrinkPurchaseCreateView(BaseModelCreateView):

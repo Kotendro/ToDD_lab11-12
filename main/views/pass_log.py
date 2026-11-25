@@ -8,8 +8,6 @@ from .common import BaseModelListView, BaseModelCreateView, BaseModelUpdateView
 class PassLogListView(BaseModelListView):
     model = PassLog
     fields = "__all__"
-    fields = ["pass_datetime", "charged_amount", "result"]
-    paginate_by = 25
 
 
 class PassLogCreateView(BaseModelCreateView):

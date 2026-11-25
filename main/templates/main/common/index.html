@@ -3,15 +3,19 @@
 {% block title %}Таблицы{% endblock %} 
 
 {% block content %}
-<h1>Таблицы</h1>
+<h1 class="text-3xl font-bold mb-6 text-gray-800">Таблицы</h1>
 
-<ul>
-  {% for section in sections %}
-  <li>
-    <a href="{{ section.url }}">{{ section.title|capfirst }}</a>
-  </li>
-  {% empty %}
-  <li>Разделы не найдены.</li>
-  {% endfor %}
-</ul>
+{% if sections %}
+    <ul class="space-y-2">
+      {% for section in sections %}
+      <li>
+        <a href="{{ section.url }}" class="block p-3 bg-white rounded hover:bg-gray-50">
+            {{ section.title|capfirst }}
+        </a>
+      </li>
+      {% endfor %}
+    </ul>
+{% else %}
+    <p class="text-gray-500 italic">Разделы не найдены.</p>
+{% endif %}
 {% endblock %}
