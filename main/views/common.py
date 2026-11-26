@@ -13,19 +13,39 @@ class IndexView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        sections = []
 
+        groups_map = {
+            "Сущности": ["client", "skipass"],
+            "Операции": ["passlog", "balanceoperation"],
+            "Справочники": ["location", "turnstile", "salepoint", "drink"],
+        }
+
+        available_models = {}
         for model in apps.get_app_config("main").get_models():
-            url_name = f"main:{model._meta.model_name}_list"
+            model_name = model._meta.model_name
+            url_name = f"main:{model_name}_list"
             try:
-                sections.append(
-                    {
-                        "title": model._meta.verbose_name_plural,
-                        "url": reverse(url_name),
-                    }
-                )
+                available_models[model_name] = {
+                    "title": model._meta.verbose_name_plural,
+                    "url": reverse(url_name),
+                }
             except NoReverseMatch:
                 continue
+
+        sections = []
+        for group_title, model_names in groups_map.items():
+            items = [
+                available_models[name]
+                for name in model_names
+                if name in available_models
+            ]
+            if items:
+                sections.append(
+                    {
+                        "group": group_title,
+                        "items": items,
+                    }
+                )
 
         context["sections"] = sections
         return context

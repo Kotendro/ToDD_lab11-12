@@ -1,20 +1,27 @@
 {% extends "main/base.html" %} 
 
-{% block title %}Таблицы{% endblock %} 
+{% block title %}Главная{% endblock %} 
 
 {% block content %}
-<h1 class="text-3xl font-bold mb-6 text-gray-800">Таблицы</h1>
+<h1 class="text-3xl font-bold mb-6 text-gray-800">Главная</h1>
 
 {% if sections %}
-    <ul class="space-y-2">
+    <div class="flex flex-wrap gap-12">
       {% for section in sections %}
-      <li>
-        <a href="{{ section.url }}" class="block p-3 bg-white rounded hover:bg-gray-50">
-            {{ section.title|capfirst }}
-        </a>
-      </li>
+      <div>
+        <h2 class="text-lg font-semibold text-gray-700 mb-2">{{ section.group }}</h2>
+        <ul class="space-y-2">
+          {% for item in section.items %}
+          <li>
+            <a href="{{ item.url }}">
+                {{ item.title|capfirst }}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
       {% endfor %}
-    </ul>
+    </div>
 {% else %}
     <p class="text-gray-500 italic">Разделы не найдены.</p>
 {% endif %}
