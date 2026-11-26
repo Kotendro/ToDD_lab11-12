@@ -2,7 +2,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, DeleteView
 
 from main.models import BalanceOperation
-from .common import BaseModelListView, BaseModelCreateView, BaseModelUpdateView
+from .common import *
 
 
 class BalanceOperationListView(BaseModelListView):
@@ -18,7 +18,5 @@ class BalanceOperationUpdateView(BaseModelUpdateView):
     model = BalanceOperation
 
 
-class BalanceOperationDeleteView(DeleteView):
+class BalanceOperationDeleteView(BaseModelDeleteView):
     model = BalanceOperation
-    success_url = reverse_lazy("main:balanceoperation_list")
-    http_method_names = ["post"]

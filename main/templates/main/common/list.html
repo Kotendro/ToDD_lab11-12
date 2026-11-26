@@ -4,11 +4,10 @@
 
 {% block content %}
 <h1 class="text-3xl font-bold mb-6 text-gray-800">{{ title|capfirst }}</h1>
-
 <input type="hidden" id="csrfToken" value="{{ csrf_token }}">
 
 {% if rows %}
-    <div class="flex flex-col gap-6">
+    <div class="flex flex-col gap-4">
         
         {# Кнопки действий #}
         <div class="flex flex-wrap gap-2">
@@ -26,49 +25,51 @@
         {# Таблица #}
         <div class="w-full">
             {% if is_paginated %}
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4 py-4 px-6 bg-gray-50 ed">
+                <div class="flex justify-between gap-4 mb-4 py-3 px-3 bg-gray-100">
                     <div class="flex items-center gap-4">
-                        <span class="text-gray-600">Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+                        <span class="text-sm text-gray-700">Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
 
                         <div class="flex space-x-2">
                             {% if page_obj.has_previous %}
-                                <a href="?page=1" class="px-3 py-1 bg-gray-200 text-gray-700 ed hover:bg-gray-300" title="Первая страница">&lt;&lt;</a>
-                                <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 bg-gray-200 text-gray-700 ed hover:bg-gray-300" title="Предыдущая страница">&lt;</a>
+                                <a href="?page=1" class="px-2 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm" title="Первая страница">&lt;&lt;</a>
+                                <a href="?page={{ page_obj.previous_page_number }}" class="px-2 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm" title="Предыдущая страница">&lt;</a>
                             {% endif %}
 
                             {% if page_obj.has_next %}
-                                <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 bg-gray-200 text-gray-700 ed hover:bg-gray-300" title="Следующая страница">&gt;</a>
-                                <a href="?page={{ page_obj.paginator.num_pages }}" class="px-3 py-1 bg-gray-200 text-gray-700 ed hover:bg-gray-300" title="Последняя страница">&gt;&gt;</a>
+                                <a href="?page={{ page_obj.next_page_number }}" class="px-2 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm" title="Следующая страница">&gt;</a>
+                                <a href="?page={{ page_obj.paginator.num_pages }}" class="px-2 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm" title="Последняя страница">&gt;&gt;</a>
                             {% endif %}
                         </div>
                     </div>
                     
                     <div class="flex items-center gap-2">
-                        <span class="text-sm text-gray-700">Перейти:</span>
+                        <span class="text-sm text-gray-700"></span>
                         <form method="get" class="flex items-center gap-2">
+                            <button type="submit" class="px-2 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm" title="Перейти">Перейти</button>
                             <input 
                                 type="number" 
                                 name="page" 
                                 min="1" 
                                 max="{{ page_obj.paginator.num_pages }}" 
                                 value="{{ page_obj.number }}" 
-                                class="w-16 px-2 py-1 border border-gray-300 ed text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                class="px-2 py-1 border border-gray-300 text-sm focus:outline-none"
                                 title="Введите номер страницы"
                             >
-                            <button type="submit" class="px-3 py-1 bg-gray-200 text-gray-700 ed hover:bg-gray-300 text-sm" title="Перейти">Ок</button>
                         </form>
                     </div>
                 </div>
             {% endif %}
 
-            <div class="overflow-x-auto overflow-y-auto" style="max-height: 60vh;">
+            <div class="max-h-[60vh] overflow-x-auto overflow-y-auto">
                 <table class="min-w-full bg-white border border-gray-100">
                     <thead class="bg-gray-100">
                         <tr>
                             {% for header in headers %}
                                 {% if header.sortable %}
-                                    <th 
-                                        class="py-3 px-4 text-left text-sm font-semibold text-gray-700 cursor-pointer hover:bg-gray-200"
+                                    <th
+                                        class="sticky top-0 z-10 bg-gray-100
+                                            py-3 px-3 text-left text-sm font-semibold text-gray-700
+                                            cursor-pointer hover:bg-gray-200"
                                         onclick="window.location.href='?sort_by={{ header.field_name }}{% if header.sort_order == 'asc' %}&sort_order=desc{% endif %}'"
                                     >
                                         {{ header.display_name }}
@@ -81,7 +82,10 @@
                                         {% endif %}
                                     </th>
                                 {% else %}
-                                    <th class="py-3 px-4 text-left text-sm font-semibold text-gray-700">{{ header.display_name }}</th>
+                                    <th class="sticky top-0 z-10 bg-gray-100
+                                            py-3 px-4 text-left text-sm font-semibold text-gray-700">
+                                        {{ header.display_name }}
+                                    </th>
                                 {% endif %}
                             {% endfor %}
                         </tr>
@@ -101,20 +105,17 @@
     </div>
 
 {% else %}
-    <p class="text-gray-500 italic">Записей пока нет.</p>
+    <p class="text-gray-700 italic">Записей пока нет.</p>
 {% endif %}
 
 <script>
-    // Сбрасываем состояние при загрузке страницы
     let selectedRow = null;
     const editBtn = document.getElementById('editBtn');
     const deleteBtn = document.getElementById('deleteBtn');
     
-    // Устанавливаем начальное состояние кнопок
     editBtn.disabled = true;
     deleteBtn.disabled = true;
 
-    // Делегирование событий для строк таблицы
     document.querySelector('tbody').addEventListener('click', function(e) {
         const row = e.target.closest('tr');
         if (row && row.tagName === 'TR') {
@@ -123,21 +124,17 @@
     });
 
     function handleRowSelect(row, event) {
-        // Если это клик по кнопке (не по строке), выходим
         if (event.target.tagName === 'BUTTON' || event.target.closest('button')) {
             return;
         }
 
-        // Снимаем выделение с предыдущей строки
         if (selectedRow) {
             selectedRow.classList.remove('bg-blue-200');
         }
 
-        // Выделяем новую строку
         row.classList.add('bg-blue-200');
         selectedRow = row;
 
-        // Включаем кнопки
         document.getElementById('editBtn').disabled = false;
         document.getElementById('deleteBtn').disabled = false;
     }
@@ -160,7 +157,6 @@
                     form.method = 'POST';
                     form.action = deleteUrl;
 
-                    // Добавляем CSRF токен
                     const csrfInput = document.createElement('input');
                     csrfInput.type = 'hidden';
                     csrfInput.name = 'csrfmiddlewaretoken';

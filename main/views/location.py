@@ -2,7 +2,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, DeleteView
 
 from main.models import Location
-from .common import BaseModelListView, BaseModelCreateView, BaseModelUpdateView
+from .common import *
 
 
 class LocationListView(BaseModelListView):
@@ -18,7 +18,5 @@ class LocationUpdateView(BaseModelUpdateView):
     model = Location
 
 
-class LocationDeleteView(DeleteView):
+class LocationDeleteView(BaseModelDeleteView):
     model = Location
-    success_url = reverse_lazy("main:location_list")
-    http_method_names = ["post"]

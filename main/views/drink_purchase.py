@@ -2,7 +2,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, DeleteView
 
 from main.models import DrinkPurchase
-from .common import BaseModelListView, BaseModelCreateView, BaseModelUpdateView
+from .common import *
 
 
 class DrinkPurchaseListView(BaseModelListView):
@@ -18,7 +18,5 @@ class DrinkPurchaseUpdateView(BaseModelUpdateView):
     model = DrinkPurchase
 
 
-class DrinkPurchaseDeleteView(DeleteView):
+class DrinkPurchaseDeleteView(BaseModelDeleteView):
     model = DrinkPurchase
-    success_url = reverse_lazy("main:drinkpurchase_list")
-    http_method_names = ["post"]

@@ -2,7 +2,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, DeleteView
 
 from main.models import Client
-from .common import BaseModelListView, BaseModelCreateView, BaseModelUpdateView
+from .common import *
 
 
 class ClientListView(BaseModelListView):
@@ -18,7 +18,5 @@ class ClientUpdateView(BaseModelUpdateView):
     model = Client
 
 
-class ClientDeleteView(DeleteView):
+class ClientDeleteView(BaseModelDeleteView):
     model = Client
-    success_url = reverse_lazy("main:client_list")
-    http_method_names = ["post"]

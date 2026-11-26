@@ -1,6 +1,23 @@
+__all__ = [
+    "IndexView",
+    "BaseModelListView",
+    "BaseModelCreateView",
+    "BaseModelUpdateView",
+    "BaseModelDeleteView",
+]
+
 from django.apps import apps
-from django.urls import reverse, NoReverseMatch
-from django.views.generic import TemplateView, ListView, CreateView, UpdateView
+from django.urls import reverse, NoReverseMatch, reverse_lazy
+from django.shortcuts import redirect
+from django.db.models import ProtectedError, RestrictedError
+from django.contrib import messages
+from django.views.generic import (
+    TemplateView,
+    ListView,
+    CreateView,
+    UpdateView,
+    DeleteView,
+)
 from django.db.models import Q
 
 
@@ -16,7 +33,7 @@ class IndexView(TemplateView):
 
         groups_map = {
             "Сущности": ["client", "skipass"],
-            "Операции": ["passlog", "balanceoperation"],
+            "Операции": ["passlog", "balanceoperation", "drinkpurchase"],
             "Справочники": ["location", "turnstile", "salepoint", "drink"],
         }
 
@@ -178,3 +195,26 @@ class BaseModelUpdateView(BaseFormMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context["title"] = f"Редактирование: {self.object}"
         return context
+
+
+class BaseModelDeleteView(DeleteView):
+    """
+    Вьюха - Общий шаблон для удаления.
+    """
+
+    http_method_names = ["post"]
+
+    def get_success_url(self):
+        return reverse(f"main:{self.model._meta.model_name}_list")
+
+    def form_valid(self, form):
+        try:
+            result = super().form_valid(form)
+            return result
+        except (ProtectedError, RestrictedError) as e:
+            messages.error(
+                self.request,
+                "Невозможно удалить запись: она используется в других местах. "
+                "Пожалуйста, удалите связанные данные или отмените операцию.",
+            )
+            return redirect(self.get_success_url())
