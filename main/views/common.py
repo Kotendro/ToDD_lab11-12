@@ -25,6 +25,7 @@ from django.views.generic import (
 from django.db.models import Q
 
 from main.filters import ModelFilterForm
+from main.input_rules import apply_input_rule
 
 
 class IndexView(TemplateView):
@@ -307,6 +308,13 @@ class BaseFormMixin(ReturnUrlMixin):
 
     def get_success_url(self):
         return self.get_return_url()
+
+    def get_form(self, form_class=None):
+        """Форма с ограничениями ввода по типам полей модели."""
+        form = super().get_form(form_class)
+        for name, form_field in form.fields.items():
+            apply_input_rule(form_field, self.model._meta.get_field(name))
+        return form
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

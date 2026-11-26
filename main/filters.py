@@ -5,6 +5,8 @@ __all__ = [
 from django import forms
 from django.db import models
 
+from main.input_rules import apply_input_rule
+
 
 class ModelFilterForm(forms.Form):
     """
@@ -21,6 +23,9 @@ class ModelFilterForm(forms.Form):
         - DateTimeField  -> диапазон дат (__date__gte / __date__lte);
         - остальное      -> текст, вхождение без учёта регистра (__icontains).
 
+    Ограничения ввода (только цифры, только буквы и т.д.) берутся
+    из main/input_rules.py - те же, что и у форм создания/редактирования.
+
     Для шаблона собирается self.groups: список
     {"label": подпись поля модели, "fields": [BoundField, ...]}.
     """
@@ -31,6 +36,12 @@ class ModelFilterForm(forms.Form):
 
         for model_field in model_fields:
             names = self.add_filter_fields(model_field)
+
+            # Даты и время уже с нативными инпутами, остальным - ограничения ввода
+            if not isinstance(model_field, (models.DateField, models.TimeField)):
+                for name in names:
+                    apply_input_rule(self.fields[name], model_field)
+
             self.groups.append(
                 {
                     "label": model_field.verbose_name,
