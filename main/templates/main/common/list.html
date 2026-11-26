@@ -1,29 +1,52 @@
 {% extends "main/base.html" %}
+{% load widget_tweaks query_tags %}
 
 {% block title %}{{ title|capfirst }}{% endblock %}
 
 {% block content %}
 <h1 class="text-3xl font-bold mb-6 text-gray-800">{{ title|capfirst }}</h1>
 <input type="hidden" id="csrfToken" value="{{ csrf_token }}">
+<input type="hidden" id="returnUrl" value="{{ return_url }}">
 
-{% if rows %}
-    <div class="flex flex-col gap-4">
-        
-        {# Кнопки действий #}
-        <div class="flex flex-wrap gap-2">
-            <a href="{{ create_url }}" class="inline-block px-4 py-2 bg-blue-600 text-white hover:bg-blue-700">
-                Создать
-            </a>
-            <button id="editBtn" disabled="disabled" class="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed">
-                Изменить
-            </button>
-            <button id="deleteBtn" disabled="disabled" class="px-4 py-2 bg-red-600 text-white hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed">
-                Удалить
-            </button>
-        </div>
+<div class="flex flex-col gap-4">
+
+    {# Кнопки действий #}
+    <div class="flex flex-wrap gap-2">
+        <a href="{{ create_url }}" class="inline-block px-4 py-2 bg-blue-600 text-white hover:bg-blue-700">
+            Создать
+        </a>
+        <button id="editBtn" disabled="disabled" class="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed">
+            Изменить
+        </button>
+        <button id="deleteBtn" disabled="disabled" class="px-4 py-2 bg-red-600 text-white hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed">
+            Удалить
+        </button>
+
+        {% if based_on_options %}
+            <div class="relative">
+                <button id="basedOnBtn" disabled="disabled" class="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed">
+                    Создать на основании ▾
+                </button>
+                <div id="basedOnMenu" class="hidden absolute left-0 top-full z-20 min-w-full bg-white border border-gray-300">
+                    {% for option in based_on_options %}
+                        <a
+                            href="#"
+                            data-create-url="{{ option.create_url }}"
+                            data-field-name="{{ option.field_name }}"
+                            class="block px-4 py-2 text-gray-700 whitespace-nowrap hover:bg-gray-100"
+                        >
+                            {{ option.title|capfirst }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="flex items-start gap-4">
 
         {# Таблица #}
-        <div class="w-full">
+        <div class="flex-1 min-w-0">
             {% if is_paginated %}
                 <div class="flex justify-between gap-4 mb-4 py-3 px-3 bg-gray-100">
                     <div class="flex items-center gap-4">
@@ -31,27 +54,27 @@
 
                         <div class="flex space-x-2">
                             {% if page_obj.has_previous %}
-                                <a href="?page=1" class="px-2 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm" title="Первая страница">&lt;&lt;</a>
-                                <a href="?page={{ page_obj.previous_page_number }}" class="px-2 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm" title="Предыдущая страница">&lt;</a>
+                                <a href="{% query_replace page=1 %}" class="px-2 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm" title="Первая страница">&lt;&lt;</a>
+                                <a href="{% query_replace page=page_obj.previous_page_number %}" class="px-2 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm" title="Предыдущая страница">&lt;</a>
                             {% endif %}
 
                             {% if page_obj.has_next %}
-                                <a href="?page={{ page_obj.next_page_number }}" class="px-2 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm" title="Следующая страница">&gt;</a>
-                                <a href="?page={{ page_obj.paginator.num_pages }}" class="px-2 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm" title="Последняя страница">&gt;&gt;</a>
+                                <a href="{% query_replace page=page_obj.next_page_number %}" class="px-2 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm" title="Следующая страница">&gt;</a>
+                                <a href="{% query_replace page=page_obj.paginator.num_pages %}" class="px-2 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm" title="Последняя страница">&gt;&gt;</a>
                             {% endif %}
                         </div>
                     </div>
-                    
+
                     <div class="flex items-center gap-2">
-                        <span class="text-sm text-gray-700"></span>
                         <form method="get" class="flex items-center gap-2">
+                            {% query_hidden_inputs exclude="page" %}
                             <button type="submit" class="px-2 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm" title="Перейти">Перейти</button>
-                            <input 
-                                type="number" 
-                                name="page" 
-                                min="1" 
-                                max="{{ page_obj.paginator.num_pages }}" 
-                                value="{{ page_obj.number }}" 
+                            <input
+                                type="number"
+                                name="page"
+                                min="1"
+                                max="{{ page_obj.paginator.num_pages }}"
+                                value="{{ page_obj.number }}"
                                 class="px-2 py-1 border border-gray-300 text-sm focus:outline-none"
                                 title="Введите номер страницы"
                             >
@@ -60,68 +83,112 @@
                 </div>
             {% endif %}
 
-            <div class="max-h-[60vh] overflow-x-auto overflow-y-auto">
-                <table class="min-w-full bg-white border border-gray-100">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            {% for header in headers %}
-                                {% if header.sortable %}
-                                    <th
-                                        class="sticky top-0 z-10 bg-gray-100
-                                            py-3 px-3 text-left text-sm font-semibold text-gray-700
-                                            cursor-pointer hover:bg-gray-200"
-                                        onclick="window.location.href='?sort_by={{ header.field_name }}{% if header.sort_order == 'asc' %}&sort_order=desc{% endif %}'"
-                                    >
-                                        {{ header.display_name }}
-                                        {% if header.is_sorted %}
-                                            {% if header.sort_order == 'asc' %}
-                                                <span class="ml-1">▲</span>
-                                            {% else %}
-                                                <span class="ml-1">▼</span>
+            {% if rows %}
+                <div class="max-h-[60vh] overflow-x-auto overflow-y-auto">
+                    <table class="min-w-full bg-white border border-gray-100">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                {% for header in headers %}
+                                    {% if header.sortable %}
+                                        <th
+                                            class="sticky top-0 z-10 bg-gray-100
+                                                py-3 px-3 text-left text-sm font-semibold text-gray-700
+                                                cursor-pointer hover:bg-gray-200"
+                                            onclick="window.location.href='{% query_replace sort_by=header.field_name sort_order=header.next_sort_order page=None %}'"
+                                        >
+                                            {{ header.display_name }}
+                                            {% if header.is_sorted %}
+                                                {% if header.sort_order == 'asc' %}
+                                                    <span class="ml-1">▲</span>
+                                                {% else %}
+                                                    <span class="ml-1">▼</span>
+                                                {% endif %}
                                             {% endif %}
-                                        {% endif %}
-                                    </th>
-                                {% else %}
-                                    <th class="sticky top-0 z-10 bg-gray-100
-                                            py-3 px-4 text-left text-sm font-semibold text-gray-700">
-                                        {{ header.display_name }}
-                                    </th>
-                                {% endif %}
-                            {% endfor %}
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        {% for row in rows %}
-                            <tr class="cursor-pointer" data-edit-url="{{ row.edit_url }}" data-delete-url="{{ row.delete_url }}">
-                                {% for value in row.values %}
-                                    <td class="py-3 px-4 text-gray-700">{{ value }}</td>
+                                        </th>
+                                    {% else %}
+                                        <th class="sticky top-0 z-10 bg-gray-100
+                                                py-3 px-4 text-left text-sm font-semibold text-gray-700">
+                                            {{ header.display_name }}
+                                        </th>
+                                    {% endif %}
                                 {% endfor %}
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            {% for row in rows %}
+                                <tr class="cursor-pointer" data-pk="{{ row.pk }}" data-edit-url="{{ row.edit_url }}" data-delete-url="{{ row.delete_url }}">
+                                    {% for value in row.values %}
+                                        <td class="py-3 px-4 text-gray-700">{{ value }}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% elif filter_form.is_active %}
+                <p class="text-gray-700 italic">По заданным фильтрам ничего не найдено.</p>
+            {% else %}
+                <p class="text-gray-700 italic">Записей пока нет.</p>
+            {% endif %}
         </div>
-    </div>
 
-{% else %}
-    <p class="text-gray-700 italic">Записей пока нет.</p>
-{% endif %}
+        {# Фильтры #}
+        {% if filter_form.groups %}
+            <aside class="w-72 shrink-0 max-h-[70vh] overflow-y-auto bg-gray-100 p-3">
+                <h2 class="text-sm font-semibold text-gray-700 mb-3">Фильтры</h2>
+
+                <form method="get" class="flex flex-col gap-3">
+                    {% query_hidden_inputs only="sort_by sort_order" %}
+
+                    {% for group in filter_form.groups %}
+                        <div>
+                            <label for="{{ group.fields.0.id_for_label }}" class="block text-sm text-gray-700 mb-1">
+                                {{ group.label|capfirst }}
+                            </label>
+                            <div class="flex gap-2">
+                                {% for field in group.fields %}
+                                    {% render_field field class="w-full min-w-0 px-2 py-1 border border-gray-300 bg-white text-sm text-gray-700 focus:outline-none" %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    <div class="flex gap-2">
+                        <button type="submit" class="px-3 py-1 bg-blue-600 text-white hover:bg-blue-700 text-sm">
+                            Применить
+                        </button>
+                        <a href="{% query_only 'sort_by sort_order' %}" class="px-3 py-1 bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm">
+                            Сбросить
+                        </a>
+                    </div>
+                </form>
+            </aside>
+        {% endif %}
+    </div>
+</div>
 
 <script>
     let selectedRow = null;
     const editBtn = document.getElementById('editBtn');
     const deleteBtn = document.getElementById('deleteBtn');
-    
+    const basedOnBtn = document.getElementById('basedOnBtn');
+    const basedOnMenu = document.getElementById('basedOnMenu');
+    const tbody = document.querySelector('tbody');
+
     editBtn.disabled = true;
     deleteBtn.disabled = true;
+    if (basedOnBtn) {
+        basedOnBtn.disabled = true;
+    }
 
-    document.querySelector('tbody').addEventListener('click', function(e) {
-        const row = e.target.closest('tr');
-        if (row && row.tagName === 'TR') {
-            handleRowSelect(row, e);
-        }
-    });
+    if (tbody) {
+        tbody.addEventListener('click', function(e) {
+            const row = e.target.closest('tr');
+            if (row && row.tagName === 'TR') {
+                handleRowSelect(row, e);
+            }
+        });
+    }
 
     function handleRowSelect(row, event) {
         if (event.target.tagName === 'BUTTON' || event.target.closest('button')) {
@@ -135,11 +202,14 @@
         row.classList.add('bg-blue-200');
         selectedRow = row;
 
-        document.getElementById('editBtn').disabled = false;
-        document.getElementById('deleteBtn').disabled = false;
+        editBtn.disabled = false;
+        deleteBtn.disabled = false;
+        if (basedOnBtn) {
+            basedOnBtn.disabled = false;
+        }
     }
 
-    document.getElementById('editBtn').addEventListener('click', function() {
+    editBtn.addEventListener('click', function() {
         if (selectedRow) {
             const editUrl = selectedRow.getAttribute('data-edit-url');
             if (editUrl) {
@@ -148,7 +218,7 @@
         }
     });
 
-    document.getElementById('deleteBtn').addEventListener('click', function() {
+    deleteBtn.addEventListener('click', function() {
         if (selectedRow) {
             const deleteUrl = selectedRow.getAttribute('data-delete-url');
             if (deleteUrl) {
@@ -169,6 +239,34 @@
             }
         }
     });
+
+    // Создать на основании: открыть форму связной модели
+    // с подставленным выбранным объектом и адресом возврата.
+    if (basedOnBtn) {
+        basedOnBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            basedOnMenu.classList.toggle('hidden');
+        });
+
+        basedOnMenu.addEventListener('click', function(e) {
+            const option = e.target.closest('a');
+            if (!option || !selectedRow) {
+                return;
+            }
+            e.preventDefault();
+
+            const params = new URLSearchParams();
+            params.set(option.getAttribute('data-field-name'), selectedRow.getAttribute('data-pk'));
+            params.set('{{ return_url_param }}', document.getElementById('returnUrl').value);
+            window.location.href = option.getAttribute('data-create-url') + '?' + params.toString();
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!basedOnMenu.contains(e.target)) {
+                basedOnMenu.classList.add('hidden');
+            }
+        });
+    }
 </script>
 
 {% endblock %}
