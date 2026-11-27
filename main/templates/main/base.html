@@ -5,14 +5,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Админ-панель{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'src/output.css'%}">
+    <title>{% block title %}Йоу{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/output.css'%}">
     <script src="{% static 'js/input-rules.js' %}" defer></script>
 </head>
 <body>
-    <header class="bg-gray-800 text-white py-4">
-        <nav class="container mx-auto px-4">
-            <a href="{% url 'main:index' %}" class="hover:text-gray-300">Главная</a>
+    <header class="bg-gray-800 py-4">
+        <nav class="container flex gap-4 px-4">
+            <a href="{% url 'main:index' %}" class="text-white hover:text-gray-300">Главная</a>
+            <form method="post" action="{% url 'account:logout' %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="text-sm text-gray-200 hover:text-gray-300 bg-transparent border-0 p-0 cursor-pointer">
+                    Выйти из аккаунта
+                </button>
+            </form>
         </nav>
     </header>
 

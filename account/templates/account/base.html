@@ -1,0 +1,23 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Йоу{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/output.css'%}">
+    <script src="{% static 'js/input-rules.js' %}" defer></script>
+</head>
+<body>
+    <main class="container mx-auto px-4 py-6">
+        {% for message in messages %}
+            <div class="{% if message.tags == 'error' %}bg-red-100 border border-red-400 text-red-700{% else %}bg-gray-100 border border-gray-300 text-gray-700{% endif %} px-4 py-3 mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
